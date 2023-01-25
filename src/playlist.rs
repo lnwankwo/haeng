@@ -70,19 +70,7 @@ pub(crate) fn add_playlist<'a>(
     name: &'a str,
     url: &'a str,
 ) -> Result<()> {
-    match Url::parse(url) {
-        // Provided value is not a valid URL.
-        Err(_) => return Err(anyhow!("`{url}` is not a valid URL")),
-
-        // Provided value is valid, check the domain
-        Ok(url) => match url.domain() {
-            None => return Err(anyhow!("`{url}` is an invalid URL, expected a domain name")),
-            Some(domain) if !matches!(domain, "youtube.com" | "www.youtube.com") => {
-                return Err(anyhow!("`{url}` is not a \"youtube.com\" URL"));
-            }
-            Some(_) => {}
-        },
-    };
+    validate_url(url)?;
 
     match playlists.get(name) {
         Some(_) => return Err(anyhow!("Playlist `{name}` already exists")),
@@ -96,6 +84,22 @@ pub(crate) fn add_playlist<'a>(
     println!("Added `{name}` ({url})");
 
     Ok(())
+}
+
+fn validate_url(url: &str) -> Result<()> {
+    match Url::parse(url) {
+        // Provided value is not a valid URL.
+        Err(_) => Err(anyhow!("`{url}` is not a valid URL")),
+
+        // Provided value is valid, check the domain
+        Ok(url) => match url.domain() {
+            None => Err(anyhow!("`{url}` is an invalid URL, expected a domain name")),
+            Some(domain) if !matches!(domain, "youtube.com" | "www.youtube.com") => {
+                Err(anyhow!("`{url}` is not a \"youtube.com\" URL"))
+            }
+            Some(_) => Ok(()),
+        },
+    }
 }
 
 pub(crate) fn remove_playlist(playlists: &mut PlaylistMap<'_>, name: &str) -> Result<()> {
@@ -164,6 +168,8 @@ pub(crate) fn download_playlist<'a>(
         Some(url) => url,
         None => get_url_from_playlists(playlists, name)?,
     };
+
+    validate_url(url)?;
 
     if save {
         if let Err(_) = add_playlist(playlists, name, url) {
