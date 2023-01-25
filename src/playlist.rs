@@ -156,6 +156,8 @@ pub(crate) fn download_playlist<'a>(
     name: &'a str,
     url: Option<&'a str>,
 ) -> Result<()> {
+    check_for_updates()?;
+
     println!("{name} - Downloading ...");
 
     let url = match url {
