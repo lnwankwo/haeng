@@ -67,8 +67,7 @@ pub(crate) fn load_playlists<'a>(data: &'a str) -> Result<PlaylistMap<'a>> {
 
 fn is_youtube_domain(url: &str) -> bool {
     match url {
-        "youtube.com" => true,
-        "www.youtube.com" => true,
+        "youtube.com" | "www.youtube.com" => true,
         _ => false,
     }
 }
