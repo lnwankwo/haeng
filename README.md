@@ -51,7 +51,11 @@ Options:
           Print help (see a summary with '-h')
 ```
 
-Note that the tool accepts youtube URLs that are not playlists:
+# Notes
 
--   If the provided URL points to a single video, this video will be downloaded.
--   If the provided URL does not point to a playlist or video, an empty folder will be created when attempting to download the "playlist".
+-   The tool accepts youtube URLs that are not playlists:
+
+    -   If the provided URL points to a single video, this video will be downloaded.
+    -   If the provided URL does not point to a playlist or video, an empty folder will be created when attempting to download the "playlist".
+
+-   If the playlist file cannot be parsed, it is overridden. This might be fixed in the future, but should not happen if you do not manually edit the file.

@@ -61,7 +61,7 @@ pub(crate) fn create_playlist_file() -> Result<()> {
 pub(crate) fn load_playlists<'a>(data: &'a str) -> Result<PlaylistMap<'a>> {
     match serde_json::from_str(&data) {
         Ok(playlist_map) => Ok(playlist_map),
-        Err(_) => Ok(HashMap::new()),
+        Err(_) => Ok(HashMap::new()), // XXX: if the playlists.json file cannot be parse we override it
     }
 }
 
