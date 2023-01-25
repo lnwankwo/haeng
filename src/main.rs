@@ -26,11 +26,11 @@ fn main() {
 
     let file_path = FILE_PATH.get().expect("Failed to get file path");
 
+    create_playlist_file().expect("Failed to create playlists file");
+
     let args = Cli::parse();
     let data = fs::read_to_string(&file_path).expect("Failed to read `playlists.json`");
     let mut playlists = load_playlists(&data).expect("Failed to load playlists");
-
-    create_playlist_file().expect("Failed to create playlists file");
 
     if !path::Path::new(&file_path).exists() {
         eprintln!("No playlists.json file found.");
