@@ -36,9 +36,9 @@ Usage: haeng.exe [COMMAND]
 
 Commands:
   add
-          Add a YouTube-playlist
+          Add a YouTube playlist
   remove
-          Remove a YouTube-playlist
+          Remove a YouTube playlist
   download
           Download a specific playlist
   view

@@ -16,7 +16,7 @@ pub(crate) static FILE_PATH: OnceCell<String> = OnceCell::new();
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum Commands {
-    /// Add a YouTube-playlist
+    /// Add a YouTube playlist
     #[command(arg_required_else_help = true)]
     Add {
         /// The name of the playlist
@@ -25,7 +25,7 @@ pub(crate) enum Commands {
         /// The URL to the playlist
         url: String,
     },
-    /// Remove a YouTube-playlist
+    /// Remove a YouTube playlist
     #[command(arg_required_else_help = true)]
     Remove {
         /// The name of the playlist that should be removed
