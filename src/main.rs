@@ -32,11 +32,6 @@ fn main() {
     let data = fs::read_to_string(&file_path).expect("Failed to read `playlists.json`");
     let mut playlists = load_playlists(&data).expect("Failed to load playlists");
 
-    if !path::Path::new(&file_path).exists() {
-        eprintln!("No playlists.json file found.");
-        std::process::exit(1);
-    }
-
     let result = match args.command {
         Some(Commands::Add { name, url }) => add_playlist(&mut playlists, &name, &url),
         Some(Commands::Remove { name }) => remove_playlist(&mut playlists, &name),
