@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::{fs, path};
+use std::fs;
 
 mod playlist;
 use playlist::*;
