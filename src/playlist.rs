@@ -7,7 +7,6 @@ use std::path;
 use std::process;
 use url::Url;
 
-// TODO: create a config file or environment variable that manages this path
 pub(crate) type PlaylistMap<'a> = HashMap<&'a str, &'a str>;
 
 pub(crate) const PLAYLIST_FILE: &str = "playlists.json";
