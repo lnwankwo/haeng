@@ -176,12 +176,12 @@ pub(crate) fn download_playlist<'a>(
     Ok(())
 }
 
-pub(crate) fn download_playlists(playlists: &mut PlaylistMap<'_>) -> Result<()> {
+pub(crate) fn download_playlists(playlists: &PlaylistMap<'_>) -> Result<()> {
     check_for_updates()?;
 
     println!("Starting downloads...");
     playlists
-        .iter_mut()
+        .iter()
         .map(|(name, url)| process_download(name, url))
         .collect::<Result<()>>()?;
 

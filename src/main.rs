@@ -39,7 +39,7 @@ fn main() {
         Some(Commands::Download { save, name, url }) => {
             download_playlist(&mut playlists, save, &name, url.as_deref())
         }
-        None => download_playlists(&mut playlists),
+        None => download_playlists(&playlists),
     };
 
     if let Err(e) = result {
