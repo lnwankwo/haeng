@@ -65,13 +65,6 @@ pub(crate) fn load_playlists<'a>(data: &'a str) -> Result<PlaylistMap<'a>> {
     }
 }
 
-fn is_youtube_domain(url: &str) -> bool {
-    match url {
-        "youtube.com" | "www.youtube.com" => true,
-        _ => false,
-    }
-}
-
 pub(crate) fn add_playlist<'a>(
     playlists: &mut PlaylistMap<'a>,
     name: &'a str,
@@ -84,7 +77,7 @@ pub(crate) fn add_playlist<'a>(
         // Provided value is valid, check the domain
         Ok(url) => match url.domain() {
             None => return Err(anyhow!("`{url}` is an invalid URL, expected a domain name")),
-            Some(domain) if !is_youtube_domain(domain) => {
+            Some(domain) if !matches!(domain, "youtube.com" | "www.youtube.com") => {
                 return Err(anyhow!("`{url}` is not a \"youtube.com\" URL"));
             }
             Some(_) => {}
