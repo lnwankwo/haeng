@@ -25,13 +25,14 @@ fn main() {
     let work_directory = home.join(".haeng");
     let playlists_file = work_directory.join("playlists.json");
 
+    let args = Cli::parse();
+
     fs::create_dir_all(work_directory).expect("Could not create .haeng directory");
     ensure_exists(&playlists_file).expect("Failed to create playlists file");
 
     let data = fs::read_to_string(&playlists_file).expect("Failed to read `playlists.json`");
     let mut playlists = load_playlists(&data).expect("Failed to load playlists");
 
-    let args = Cli::parse();
     let result = match args.command {
         Some(Commands::Add { name, url }) => {
             add_playlist(&playlists_file, &mut playlists, &name, &url)
