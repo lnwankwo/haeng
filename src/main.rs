@@ -33,16 +33,19 @@ fn main() {
     let data = fs::read_to_string(&playlists_file).expect("Failed to read `playlists.json`");
     let mut playlists = load_playlists(&data).expect("Failed to load playlists");
 
-    let result = match args.command {
-        Some(Commands::Add { name, url }) => {
-            add_playlist(&playlists_file, &mut playlists, &name, &url)
+    let result = if let Some(command) = args.command {
+        match command {
+            Commands::Add { name, url } => {
+                add_playlist(&playlists_file, &mut playlists, &name, &url)
+            }
+            Commands::Remove { name } => remove_playlist(&playlists_file, &mut playlists, &name),
+            Commands::View => view_playlists(&playlists),
+            Commands::Download { save, name, url } => {
+                download_playlist(&playlists_file, &mut playlists, save, &name, url.as_deref())
+            }
         }
-        Some(Commands::Remove { name }) => remove_playlist(&playlists_file, &mut playlists, &name),
-        Some(Commands::View) => view_playlists(&playlists),
-        Some(Commands::Download { save, name, url }) => {
-            download_playlist(&playlists_file, &mut playlists, save, &name, url.as_deref())
-        }
-        None => download_playlists(&playlists_file, &playlists),
+    } else {
+        download_playlists(&playlists_file, &playlists)
     };
 
     if let Err(e) = result {
