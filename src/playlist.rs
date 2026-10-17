@@ -1,18 +1,12 @@
 use anyhow::{anyhow, Result};
 use clap::Subcommand;
-use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::fs;
-use std::path;
+use std::path::PathBuf;
 use std::process;
 use url::Url;
 
 type PlaylistMap<'a> = HashMap<&'a str, &'a str>;
-
-pub(crate) const PLAYLIST_FILE: &str = "playlists.json";
-
-pub(crate) static HAENG_PATH: OnceCell<String> = OnceCell::new();
-pub(crate) static FILE_PATH: OnceCell<String> = OnceCell::new();
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum Commands {
@@ -48,11 +42,9 @@ pub(crate) enum Commands {
     View,
 }
 
-pub(crate) fn create_playlist_file() -> Result<()> {
-    let file_path = FILE_PATH.get().ok_or(anyhow!("Couldn't get file path"))?;
-
-    if !path::Path::new(file_path).exists() {
-        fs::File::create(file_path)?;
+pub(crate) fn ensure_exists(path: &PathBuf) -> Result<()> {
+    if !path.exists() {
+        fs::File::create(path)?;
     }
 
     Ok(())
@@ -65,7 +57,17 @@ pub(crate) fn load_playlists<'a>(data: &'a str) -> Result<PlaylistMap<'a>> {
     }
 }
 
+/// This overwrites the config by truncating it and writing the new playlists.
+pub(crate) fn save_playlists(path: &PathBuf, playlists: &PlaylistMap) -> Result<()> {
+    // This overwrites the config by truncating it and writing the new playlists.
+    let file = fs::File::create(path)?;
+    serde_json::to_writer_pretty(file, &playlists)?;
+
+    Ok(())
+}
+
 pub(crate) fn add_playlist<'a>(
+    path: &'a PathBuf,
     playlists: &mut PlaylistMap<'a>,
     name: &'a str,
     url: &'a str,
@@ -77,9 +79,7 @@ pub(crate) fn add_playlist<'a>(
         None => playlists.insert(name, url),
     };
 
-    let file_path = FILE_PATH.get().ok_or(anyhow!("Couldn't get file path"))?;
-    let file = fs::File::create(file_path)?;
-    serde_json::to_writer_pretty(file, &playlists)?;
+    save_playlists(path, playlists)?;
 
     println!("Added `{name}` ({url})");
 
@@ -102,15 +102,17 @@ fn validate_url(url: &str) -> Result<()> {
     }
 }
 
-pub(crate) fn remove_playlist(playlists: &mut PlaylistMap<'_>, name: &str) -> Result<()> {
+pub(crate) fn remove_playlist(
+    path: &PathBuf,
+    playlists: &mut PlaylistMap<'_>,
+    name: &str,
+) -> Result<()> {
     match playlists.remove(name) {
         Some(url) => println!("Succesfully removed `{name}` ({url})"),
         None => println!("`{name}` was not present in the list"),
     }
 
-    let file_path = FILE_PATH.get().ok_or(anyhow!("Couldn't get file path"))?;
-    let file = fs::File::create(file_path)?;
-    serde_json::to_writer_pretty(file, &playlists)?;
+    save_playlists(path, playlists)?;
 
     Ok(())
 }
@@ -132,9 +134,7 @@ fn get_url_from_playlists<'a>(playlists: &PlaylistMap<'a>, name: &'a str) -> Res
     }
 }
 
-fn process_download(name: &str, url: &str) -> Result<()> {
-    let haeng_path = HAENG_PATH.get().ok_or(anyhow!("Couldn't get file path"))?;
-
+fn process_download(path: &PathBuf, name: &str, url: &str) -> Result<()> {
     process::Command::new("yt-dlp.exe")
         .stdout(process::Stdio::inherit())
         .args([
@@ -142,10 +142,15 @@ fn process_download(name: &str, url: &str) -> Result<()> {
             "-f m4a",
             "--embed-thumbnail",
             "--download-archive",
-            &format!("{haeng_path}\\myarchive.txt"),
+            path.join("myarchive.txt")
+                .to_str()
+                .expect("Path not valid unicode"),
             "--restrict-filenames",
             "-o",
-            &format!("{haeng_path}\\{name}\\%(title)s-%(id)s.%(ext)s"),
+            path.join(name)
+                .join("%(title)s-%(id)s.%(ext)s")
+                .to_str()
+                .expect("Path not valid unicode"),
             url,
         ])
         .output()
@@ -155,6 +160,7 @@ fn process_download(name: &str, url: &str) -> Result<()> {
 }
 
 pub(crate) fn download_playlist<'a>(
+    path: &'a PathBuf,
     playlists: &mut PlaylistMap<'a>,
     save: bool,
     name: &'a str,
@@ -172,23 +178,23 @@ pub(crate) fn download_playlist<'a>(
     validate_url(url)?;
 
     if save {
-        if let Err(_) = add_playlist(playlists, name, url) {
+        if let Err(_) = add_playlist(path, playlists, name, url) {
             eprintln!("Playlist already exists, continuing with the download...")
         }
     }
 
-    process_download(name, url)?;
+    process_download(path, name, url)?;
 
     Ok(())
 }
 
-pub(crate) fn download_playlists(playlists: &PlaylistMap<'_>) -> Result<()> {
+pub(crate) fn download_playlists(path: &PathBuf, playlists: &PlaylistMap<'_>) -> Result<()> {
     check_for_updates()?;
 
     println!("Starting downloads...");
     playlists
         .iter()
-        .map(|(name, url)| process_download(name, url))
+        .map(|(name, url)| process_download(path, name, url))
         .collect::<Result<()>>()?;
 
     Ok(())

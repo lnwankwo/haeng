@@ -2,7 +2,11 @@ use clap::Parser;
 use std::fs;
 
 mod playlist;
-use playlist::*;
+
+use crate::playlist::{
+    add_playlist, download_playlist, download_playlists, ensure_exists, load_playlists,
+    remove_playlist, view_playlists, Commands,
+};
 
 const DESCRIPTION: &str = r#"
 If no command is provided, haeng will try to
@@ -17,29 +21,27 @@ struct Cli {
 }
 
 fn main() {
-    HAENG_PATH
-        .set(std::env::var("HAENG_PATH").expect("Failed to load `HAENG_PATH`"))
-        .expect("Failed to get `HAENG_PATH`");
-    FILE_PATH
-        .set(format!("{}\\{PLAYLIST_FILE}", HAENG_PATH.get().unwrap()))
-        .expect("Failed to set playlists file path");
+    let home = dirs::home_dir().expect("Could not find home directory");
+    let work_directory = home.join(".haeng");
+    let playlists_file = work_directory.join("playlists.json");
 
-    let file_path = FILE_PATH.get().expect("Failed to get file path");
+    fs::create_dir_all(work_directory).expect("Could not create .haeng directory");
+    ensure_exists(&playlists_file).expect("Failed to create playlists file");
 
-    create_playlist_file().expect("Failed to create playlists file");
-
-    let args = Cli::parse();
-    let data = fs::read_to_string(&file_path).expect("Failed to read `playlists.json`");
+    let data = fs::read_to_string(&playlists_file).expect("Failed to read `playlists.json`");
     let mut playlists = load_playlists(&data).expect("Failed to load playlists");
 
+    let args = Cli::parse();
     let result = match args.command {
-        Some(Commands::Add { name, url }) => add_playlist(&mut playlists, &name, &url),
-        Some(Commands::Remove { name }) => remove_playlist(&mut playlists, &name),
+        Some(Commands::Add { name, url }) => {
+            add_playlist(&playlists_file, &mut playlists, &name, &url)
+        }
+        Some(Commands::Remove { name }) => remove_playlist(&playlists_file, &mut playlists, &name),
         Some(Commands::View) => view_playlists(&playlists),
         Some(Commands::Download { save, name, url }) => {
-            download_playlist(&mut playlists, save, &name, url.as_deref())
+            download_playlist(&playlists_file, &mut playlists, save, &name, url.as_deref())
         }
-        None => download_playlists(&playlists),
+        None => download_playlists(&playlists_file, &playlists),
     };
 
     if let Err(e) = result {
