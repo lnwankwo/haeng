@@ -42,6 +42,19 @@ pub(crate) enum Commands {
     View,
 }
 
+impl Commands {
+    pub fn run<'a>(&'a self, file: &'a PathBuf, playlists: &mut PlaylistMap<'a>) -> Result<()> {
+        match self {
+            Commands::Add { name, url } => add_playlist(file, playlists, &name, &url),
+            Commands::Remove { name } => remove_playlist(file, playlists, &name),
+            Commands::Download { save, name, url } => {
+                download_playlist(file, playlists, *save, &name, url.as_deref())
+            }
+            Commands::View => view_playlists(playlists),
+        }
+    }
+}
+
 pub(crate) fn ensure_exists(path: &PathBuf) -> Result<()> {
     if !path.exists() {
         fs::File::create(path)?;

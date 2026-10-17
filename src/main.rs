@@ -34,16 +34,7 @@ fn main() {
     let mut playlists = load_playlists(&data).expect("Failed to load playlists");
 
     let result = if let Some(command) = args.command {
-        match command {
-            Commands::Add { name, url } => {
-                add_playlist(&playlists_file, &mut playlists, &name, &url)
-            }
-            Commands::Remove { name } => remove_playlist(&playlists_file, &mut playlists, &name),
-            Commands::View => view_playlists(&playlists),
-            Commands::Download { save, name, url } => {
-                download_playlist(&playlists_file, &mut playlists, save, &name, url.as_deref())
-            }
-        }
+        command.run(&playlists_file, &mut playlists)
     } else {
         download_playlists(&playlists_file, &playlists)
     };
