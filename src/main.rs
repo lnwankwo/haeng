@@ -3,10 +3,7 @@ use std::fs;
 
 mod playlist;
 
-use crate::playlist::{
-    add_playlist, download_playlist, download_playlists, ensure_exists, load_playlists,
-    remove_playlist, view_playlists, Commands,
-};
+use crate::playlist::{download_playlists, ensure_exists, load_playlists, Commands};
 
 const DESCRIPTION: &str = r#"
 If no command is provided, haeng will try to
