@@ -135,19 +135,24 @@ fn get_url_from_playlists<'a>(playlists: &PlaylistMap<'a>, name: &'a str) -> Res
 }
 
 fn process_download(path: &PathBuf, name: &str, url: &str) -> Result<()> {
-    process::Command::new("yt-dlp.exe")
+    eprintln!("Downloading: {name} - {url}");
+    let target_directory = path
+        .parent()
+        .expect("Could not find parent of playlist.json");
+    let archive_path = target_directory.join("myarchive.txt");
+
+    process::Command::new("yt-dlp")
         .stdout(process::Stdio::inherit())
         .args([
             "-ciw",
             "-f m4a",
             "--embed-thumbnail",
             "--download-archive",
-            path.join("myarchive.txt")
-                .to_str()
-                .expect("Path not valid unicode"),
+            archive_path.to_str().expect("Path not valid unicode"),
             "--restrict-filenames",
             "-o",
-            path.join(name)
+            target_directory
+                .join(name)
                 .join("%(title)s-%(id)s.%(ext)s")
                 .to_str()
                 .expect("Path not valid unicode"),
