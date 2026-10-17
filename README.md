@@ -20,14 +20,6 @@ Subsequently, you can place the executable in `haeng/target/release` anywhere on
 
 # Usage
 
-`haeng` relies on the `PATH` variable `HAENG_PATH` to find the folder in which playlists are saved, which can be set manually or configured in your system variables. If you wish to set the variable when calling `haeng.exe`, please use:
-
-```
-HAENG_PATH="path/to/playlist_folder" haeng.exe [COMMAND]
-```
-
-Also see the usage message below:
-
 ```
 If no command is provided, haeng will try to
 download all currently saved playlists.
@@ -58,4 +50,4 @@ Options:
     -   If the provided URL points to a single video, this video will be downloaded.
     -   If the provided URL does not point to a playlist or video, an empty folder will be created when attempting to download the "playlist".
 
--   If the playlist file cannot be parsed, it is overridden. This might be fixed in the future, but should not happen if you do not manually edit the file.
+-   If the playlist file cannot be parsed, it is overridden and the data is lost. This might be fixed in the future, but should not happen if you do not manually edit the file.
