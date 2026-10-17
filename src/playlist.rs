@@ -202,7 +202,7 @@ pub(crate) fn download_playlists(path: &PathBuf, playlists: &PlaylistMap<'_>) ->
 
 fn check_for_updates() -> Result<()> {
     println!("Checking for updates...");
-    process::Command::new("yt-dlp.exe")
+    process::Command::new("yt-dlp")
         .stdout(process::Stdio::inherit())
         .args(["-U"])
         .output()
